@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dominion</title>
+    <style>
+        body {
+            background-color: #c1c5e3;
+            font-family: Tahoma, Verdana, sans-serif;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        .col-6 {
+            width: 100%;
+        }
+        @media screen and (min-width: 600px) {
+            .col-6 {
+                width: 50%;
+            }
+        }
+        .col-12 {
+            width: 100%;
+        }
+        [class *= "col-"] {
+            position: relative;
+            box-sizing: border-box;
+            padding: 15px;
+        }
+        .big-label {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .card {
+            width: 200px;
+            height: 300px;
+            position: relative;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #777;
+            box-shadow: 6px 6px #777;
+        }
+        .play-button {
+            position: absolute;
+            right: 5px;
+            bottom: 5px;
+        }
+        .reset-button {
+            padding: 10px;
+            position: absolute;
+            right: 10px;
+            top: 10px;
+        }
+        .c-button {
+            width: 30px;
+        }
+        .predefined-card {
+            padding: 5px;
+            cursor: pointer;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #777;
+            box-shadow: 6px 6px #777;
+        }
+        .predefined-card:hover {
+            background-color: #aaaaaa;
+            border: 1px solid #444;
+            box-shadow: 6px 6px #444;
+        }
+        .coin {
+            background-color: gold;
+            box-shadow: 1px 1px 2px #000;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .coin > label {
+            padding-left: 5px;
+        }
+        ol {
+            margin: 0px;
+            background-color: wheat;
+            padding: 10px;
+        }
+        ol li {
+            margin-left: 25px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-6">
+            <div class="row">
+                <div class="col-12 big-label" id="totalActions">
+                    0
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 big-label" id="totalPurchases">
+                    0
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 big-label" id="totalCoins">
+                    0
+                </div>
+            </div>
+            <button class="reset-button" onclick="resetTotals()">Сбросить</button>
+        </div>
+        <div class="col-6">
+            <ol>
+                <li>В начале хода жмём кнопку "Сбросить", что бы вернуть значения по-умолчанию (1 действие, 1 покупка)</li>
+                <li>Выбираем карту в списке справа или сами выставляем значения слева</li>
+                <li>Жмём "Сыграть карту" (не сработает, если действия кончились)</li>
+            </ol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <div class="row">
+                <div class="card">
+                    <div id="cardActions">0</div>
+                    <div id="cardPurchases">0</div>
+                    <div id="cardCoins">0</div>
+                    <button id="btnPlay" class="play-button" onclick="playCard()">Сыграть карту</button>
+                </div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col-12">
+                            Действия
+                            <button class="c-button" onclick="onCardChange('actions', 1)">+</button>
+                            <button class="c-button" onclick="onCardChange('actions', -1)">-</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            Покупки
+                            <button class="c-button" onclick="onCardChange('purchases', 1)">+</button>
+                            <button class="c-button" onclick="onCardChange('purchases', -1)">-</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            Монеты
+                            <button class="c-button" onclick="onCardChange('coins', 1)">+</button>
+                            <button class="c-button" onclick="onCardChange('coins', -1)">-</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6" id="cardList">
+        </div>
+    </div>
+</div>
+<script>
+    var totalActions = 0;
+    var totalPurchases = 0;
+    var totalCoins = 0;
+
+    var currentActions = 0;
+    var currentPurchases = 0;
+    var currentCoins = 0;
+
+    var predefinedCards = [
+        { id: 0, name: "Погреба", cost: 2, actions: 1, purchases: 0, coins: 0 },
+        { id: 1, name: "Деревня", cost: 3, actions: 2, purchases: 0, coins: 0 },
+        { id: 2, name: "Канцлер", cost: 3, actions: 0, purchases: 0, coins: 2 },
+        { id: 3, name: "Лесоруб", cost: 3, actions: 0, purchases: 1, coins: 2 },
+        { id: 4, name: "Ополчение", cost: 4, actions: 0, purchases: 0, coins: 2 },
+        { id: 5, name: "Ростовщик", cost: 4, actions: 0, purchases: 0, coins: 3 },
+        { id: 6, name: "Шпион", cost: 4, actions: 1, purchases: 1, coins: 0 },
+        { id: 7, name: "Фестиваль", cost: 5, actions: 2, purchases: 1, coins: 2 },
+        { id: 8, name: "Лаборатория", cost: 5, actions: 1, purchases: 0, coins: 0 },
+        { id: 9, name: "Зал совета", cost: 5, actions: 0, purchases: 1, coins: 0 },
+        { id: 10, name: "Рынок", cost: 5, actions: 1, purchases: 1, coins: 1 }
+    ];
+
+    window.onload = function() {
+        resetTotals();
+        predefinedCards.forEach(card => {
+            var htmlRow = '<div id="p-c-' + card.id +
+                '" class="predefined-card" onclick="predefinedCardClick(' + card.id + ')">';
+            htmlRow += '<div class="coin"><label>' + card.cost + '</label></div> ' + card.name + ' (';
+            if (card.actions > 0) {
+                htmlRow += ' ' + card.actions + ' ' + pluralActions(card.actions);
+            }
+            if (card.purchases > 0) {
+                htmlRow += ' ' + card.purchases + ' ' + pluralPurchases(card.purchases);
+            }
+            if (card.coins > 0) {
+                htmlRow += ' ' + card.coins + ' ' + pluralCoins(card.coins);
+            }
+            htmlRow += ' )</div>';
+            document.getElementById("cardList").innerHTML += htmlRow;
+        });
+    };
+
+    resetTotals = function() {
+        totalActions = 1;
+        totalPurchases = 1;
+        totalCoins = 0;
+        currentActions = 0;
+        currentPurchases = 0;
+        currentCoins = 0;
+        updateTotalLabels();
+        updateCardLabels();
+        document.getElementById("btnPlay").disabled = false;
+    };
+
+    predefinedCardClick = function(cardID) {
+        predefinedCards.forEach(card => {
+            if (card.id == cardID) {
+                currentActions = card.actions;
+                currentPurchases = card.purchases;
+                currentCoins = card.coins;
+                updateCardLabels();
+            }
+        });
+    };
+
+    onCardChange = function(resourceType, valueDelta) {
+        if (resourceType == "actions") {
+            currentActions += valueDelta;
+            if (currentActions < 0) {
+                currentActions = 0;
+            }
+        } else if (resourceType == "purchases") {
+            currentPurchases += valueDelta;
+            if (currentPurchases < 0) {
+                currentPurchases = 0;
+            }
+        } else {
+            currentCoins += valueDelta;
+            if (currentCoins < 0) {
+                currentCoins = 0;
+            }
+        }
+        updateCardLabels();
+    };
+
+    playCard = function() {
+        if (totalActions <= 0) {
+            alert("Не хватает действий");
+            return;
+        }
+        totalActions += currentActions - 1;
+        totalPurchases += currentPurchases;
+        totalCoins += currentCoins;
+        currentActions = 0;
+        currentPurchases = 0;
+        currentCoins = 0;
+        updateTotalLabels();
+        updateCardLabels();
+    };
+
+    updateTotalLabels = function() {
+        document.getElementById("totalActions").innerHTML = totalActions + " " + pluralActions(totalActions);
+        document.getElementById("totalPurchases").innerHTML = totalPurchases + " " + pluralPurchases(totalPurchases);
+        if (totalCoins == 0) {
+            document.getElementById("totalCoins").innerHTML = '';
+        } else {
+            document.getElementById("totalCoins").innerHTML = "+ " + totalCoins + " " + pluralCoins(totalCoins);
+        }
+        if (totalActions == 0) {
+            document.getElementById("btnPlay").disabled = true;
+        }
+    };
+
+    updateCardLabels = function() {
+        if (currentActions == 0) {
+            document.getElementById("cardActions").innerHTML = '';
+        } else {
+            document.getElementById("cardActions").innerHTML = "+ " + currentActions + " " +
+                pluralActions(currentActions);
+        }
+        if (currentPurchases == 0) {
+            document.getElementById("cardPurchases").innerHTML = '';
+        } else {
+            document.getElementById("cardPurchases").innerHTML = "+ " + currentPurchases + " " +
+                pluralPurchases(currentPurchases);
+        }
+        if (currentCoins == 0) {
+            document.getElementById("cardCoins").innerHTML = '';
+        } else {
+            document.getElementById("cardCoins").innerHTML = "+ " + currentCoins + " " +
+                pluralCoins(currentCoins);
+        }
+    };
+
+    pluralActions = function(value) {
+        return plural(value, "действие", "действия", "действий");
+    };
+
+    pluralPurchases = function(value) {
+        return plural(value, "покупка", "покупки", "покупок");
+    };
+
+    pluralCoins = function(value) {
+        return plural(value, "монета", "монеты", "монет");
+    };
+
+    plural = function(value, one, two, many) {
+        var teen = value > 10 && value < 20;
+        var endsWithOne = value % 10 === 1;
+        if (!teen && endsWithOne) {
+            return one;
+        }
+        if (!teen && value % 10 >= 2 && value % 10 <= 4) {
+            return two;
+        }
+        return many;
+    };
+</script>
+</body>
+</html>
