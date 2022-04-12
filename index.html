@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dominion</title>
-    <style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dominion helper</title>
+    <style type="text/css">
         body {
             background-color: #c1c5e3;
             font-family: Tahoma, Verdana, sans-serif;
@@ -14,12 +15,7 @@
             width: 100%;
         }
         .col-6 {
-            width: 100%;
-        }
-        @media screen and (min-width: 600px) {
-            .col-6 {
-                width: 50%;
-            }
+            width: 50%;
         }
         .col-12 {
             width: 100%;
@@ -33,9 +29,12 @@
             font-size: 22px;
             font-weight: 700;
         }
+        progress {
+            margin-left: 10px;
+        }
         .card {
-            width: 200px;
-            height: 300px;
+            width: 150px;
+            height: 220px;
             position: relative;
             background-color: white;
             border-radius: 5px;
@@ -79,7 +78,7 @@
             margin-right: 10px;
         }
         .coin > label {
-            padding-left: 5px;
+            padding-left: 6px;
         }
         ol {
             margin: 0px;
@@ -88,6 +87,19 @@
         }
         ol li {
             margin-left: 25px;
+        }
+        .history {
+            background-color: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .hidden {
+            visibility: hidden;
+        }
+        @media only screen and (max-width: 500px) {
+            .col-6 {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -110,7 +122,7 @@
                     0
                 </div>
             </div>
-            <button class="reset-button" onclick="resetTotals()">Сбросить</button>
+            <button class="reset-button" onclick="resetTurn()">Сбросить</button>
         </div>
         <div class="col-6">
             <ol>
@@ -129,7 +141,7 @@
                     <div id="cardCoins">0</div>
                     <button id="btnPlay" class="play-button" onclick="playCard()">Сыграть карту</button>
                 </div>
-                <div class="col-6">
+                <div class="col-4">
                     <div class="row">
                         <div class="col-12">
                             Действия
@@ -157,6 +169,12 @@
         <div class="col-6" id="cardList">
         </div>
     </div>
+    <div class="row" id="historyRow">
+        <div class="col-6">
+            <h4>История хода</h4>
+            <div id="history" class="history"></div>
+        </div>
+    </div>
 </div>
 <script>
     var totalActions = 0;
@@ -181,8 +199,10 @@
         { id: 10, name: "Рынок", cost: 5, actions: 1, purchases: 1, coins: 1 }
     ];
 
+    var playedCards = [];
+
     window.onload = function() {
-        resetTotals();
+        resetTurn();
         predefinedCards.forEach(card => {
             var htmlRow = '<div id="p-c-' + card.id +
                 '" class="predefined-card" onclick="predefinedCardClick(' + card.id + ')">';
@@ -201,6 +221,15 @@
         });
     };
 
+    resetTurn = function() {
+        playedCards = [];
+        resetTotals();
+        updateTotalLabels();
+        updateCardLabels();
+        updateHistory();
+        document.getElementById("btnPlay").disabled = false;
+    };
+
     resetTotals = function() {
         totalActions = 1;
         totalPurchases = 1;
@@ -208,9 +237,6 @@
         currentActions = 0;
         currentPurchases = 0;
         currentCoins = 0;
-        updateTotalLabels();
-        updateCardLabels();
-        document.getElementById("btnPlay").disabled = false;
     };
 
     predefinedCardClick = function(cardID) {
@@ -249,6 +275,7 @@
             alert("Не хватает действий");
             return;
         }
+        playedCards.push({ actions: currentActions, purchases: currentPurchases, coins: currentCoins });
         totalActions += currentActions - 1;
         totalPurchases += currentPurchases;
         totalCoins += currentCoins;
@@ -257,10 +284,38 @@
         currentCoins = 0;
         updateTotalLabels();
         updateCardLabels();
+        updateHistory();
+    };
+
+    updateHistory = function() {
+        var html = '';
+        var i = 1;
+        playedCards.forEach(card => {
+            html += i++ + ')';
+            if (card.actions > 0) {
+                html += ' ' + card.actions + ' ' + pluralActions(card.actions);
+            }
+            if (card.purchases > 0) {
+                html += ' ' + card.purchases + ' ' + pluralPurchases(card.purchases);
+            }
+            if (card.coins > 0) {
+                html += ' ' + card.coins + ' ' + pluralCoins(card.coins);
+            }
+            html += '<br>';
+        });
+        document.getElementById("history").innerHTML = html;
+        var historyRow = document.getElementById("historyRow");
+        if (playedCards.length == 0 && !historyRow.classList.contains("hidden")) {
+            historyRow.classList.add("hidden");
+        }
+        if (playedCards.length > 0 && historyRow.classList.contains("hidden")) {
+            historyRow.classList.remove("hidden");
+        }
     };
 
     updateTotalLabels = function() {
-        document.getElementById("totalActions").innerHTML = totalActions + " " + pluralActions(totalActions);
+        document.getElementById("totalActions").innerHTML = totalActions + " " + pluralActions(totalActions) +
+                ' <progress max="10" value="' + totalActions + '"></progress>';
         document.getElementById("totalPurchases").innerHTML = totalPurchases + " " + pluralPurchases(totalPurchases);
         if (totalCoins == 0) {
             document.getElementById("totalCoins").innerHTML = '';
