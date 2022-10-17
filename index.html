@@ -2,374 +2,348 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dominion helper</title>
-    <style type="text/css">
-        body {
-            background-color: #c1c5e3;
-            font-family: Tahoma, Verdana, sans-serif;
-        }
-        .row {
-            display: flex;
-            flex-wrap: wrap;
-            width: 100%;
-        }
-        .col-6 {
-            width: 50%;
-        }
-        .col-12 {
-            width: 100%;
-        }
-        [class *= "col-"] {
-            position: relative;
-            box-sizing: border-box;
-            padding: 15px;
-        }
-        .big-label {
-            font-size: 22px;
-            font-weight: 700;
-        }
-        progress {
-            margin-left: 10px;
-        }
-        .card {
-            width: 150px;
-            height: 220px;
-            position: relative;
-            background-color: white;
-            border-radius: 5px;
-            border: 1px solid #777;
-            box-shadow: 6px 6px #777;
-        }
-        .play-button {
-            position: absolute;
-            right: 5px;
-            bottom: 5px;
-        }
-        .reset-button {
-            padding: 10px;
-            position: absolute;
-            right: 10px;
-            top: 10px;
-        }
-        .c-button {
-            width: 30px;
-        }
-        .predefined-card {
-            padding: 5px;
-            cursor: pointer;
-            background-color: white;
-            border-radius: 5px;
-            border: 1px solid #777;
-            box-shadow: 6px 6px #777;
-        }
-        .predefined-card:hover {
-            background-color: #aaaaaa;
-            border: 1px solid #444;
-            box-shadow: 6px 6px #444;
-        }
-        .coin {
-            background-color: gold;
-            box-shadow: 1px 1px 2px #000;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 10px;
-        }
-        .coin > label {
-            padding-left: 6px;
-        }
-        ol {
-            margin: 0px;
-            background-color: wheat;
-            padding: 10px;
-        }
-        ol li {
-            margin-left: 25px;
-        }
-        .history {
-            background-color: white;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        .hidden {
-            visibility: hidden;
-        }
-        @media only screen and (max-width: 500px) {
-            .col-6 {
-                width: 100%;
-            }
-        }
-    </style>
+    <title>Catan</title>
 </head>
+<style>
+    .container {
+    }
+    .scr {
+        overflow: scroll;
+        height: 180px;
+    }
+    svg > g > text {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -o-user-select: none;
+        user-select: none;
+        text-anchor: middle;
+        dominant-baseline: middle;
+    }
+    .smallRect {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        border: 1px solid black;
+    }
+    .wheat {
+        fill: yellow;
+        background: yellow;
+    }
+    .sheep {
+        fill: lightgreen;
+        background: lightgreen;
+    }
+    .rock {
+        fill: darkgray;
+        background: darkgray;
+    }
+    .wood {
+        fill: darkgreen;
+        background: darkgreen;
+    }
+    .clay {
+        fill: orange;
+        background: orange;
+    }
+    .desert {
+        fill: lightyellow;
+        background: lightyellow;
+    }
+    .tsV1 {
+        fill: pink;
+    }
+    .tsT1 {
+        fill: red;
+    }
+    .tsV2 {
+        fill: cyan;
+    }
+    .tsT2 {
+        fill: blue;
+    }
+    .tsV3 {
+        fill: #aaa;
+    }
+    .tsT3 {
+        fill: #888;
+    }
+    .tsV4 {
+        fill: gold;
+    }
+    .tsT4 {
+        fill: orange;
+    }
+</style>
 <body>
 <div class="container">
-    <div class="row">
-        <div class="col-6">
-            <div class="row">
-                <div class="col-12 big-label" id="totalActions">
-                    0
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 big-label" id="totalPurchases">
-                    0
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 big-label" id="totalCoins">
-                    0
-                </div>
-            </div>
-            <button class="reset-button" onclick="resetTurn()">Сбросить</button>
-        </div>
-        <div class="col-6">
-            <ol>
-                <li>В начале хода жмём кнопку "Сбросить", что бы вернуть значения по-умолчанию (1 действие, 1 покупка)</li>
-                <li>Выбираем карту из списка или сами выставляем значения с помощью кнопок "+" и "-"</li>
-                <li>Жмём "Сыграть карту" (не сработает, если действия кончились)</li>
-            </ol>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-6">
-            <div class="row">
-                <div class="card">
-                    <div id="cardActions">0</div>
-                    <div id="cardPurchases">0</div>
-                    <div id="cardCoins">0</div>
-                    <button id="btnPlay" class="play-button" onclick="playCard()">Сыграть карту</button>
-                </div>
-                <div class="col-4">
-                    <div class="row">
-                        <div class="col-12">
-                            Действия
-                            <button class="c-button" onclick="onCardChange('actions', 1)">+</button>
-                            <button class="c-button" onclick="onCardChange('actions', -1)">-</button>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            Покупки
-                            <button class="c-button" onclick="onCardChange('purchases', 1)">+</button>
-                            <button class="c-button" onclick="onCardChange('purchases', -1)">-</button>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            Монеты
-                            <button class="c-button" onclick="onCardChange('coins', 1)">+</button>
-                            <button class="c-button" onclick="onCardChange('coins', -1)">-</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6" id="cardList">
-        </div>
-    </div>
-    <div class="row" id="historyRow">
-        <div class="col-6">
-            <h4>История хода</h4>
-            <div id="history" class="history"></div>
-        </div>
+    <div id="gameField"></div>
+    <div>
+        <label>Lock field: </label>
+        <label for="r_on">ON</label>
+        <input type="radio" id="r_on" name="lockR" value="r_on">
+        <label for="r_off">OFF</label>
+        <input type="radio" id="r_off" name="lockR" value="r_off" checked>
+        <hr>
+        <label for="dice1">Dice 1: </label>
+        <input type="number" id="dice1" min="1" max="6" value="1">
+        <label for="dice2">Dice 2: </label>
+        <input type="number" id="dice2" min="1" max="6" value="1">
+        <button onclick="dicesConfirm()">Confirm</button>
+        <div id="gains" class="scr">Game start</div>
+        <div id="diceStats"></div>
     </div>
 </div>
 <script>
-    var totalActions = 0;
-    var totalPurchases = 0;
-    var totalCoins = 0;
+    var hexes = [];
+    var townSpots = [];
+    var lock = 0;
+    var throws = [];
 
-    var currentActions = 0;
-    var currentPurchases = 0;
-    var currentCoins = 0;
+    function dicesConfirm() {
+        let d1 = document.getElementById("dice1").value;
+        let d2 = document.getElementById("dice2").value;
+        let dSum = +d1 + +d2;
+        throws.push(dSum);
+        var pg = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]; //gains
+        hexes.forEach(h => {
+            if (h.resource != 0 && h.number == dSum) {
+                h.nearby.forEach(n => {
+                    if (townSpots[n].occupiedBy != null && townSpots[n].occupiedBy != 0) {
+                        let gain = +townSpots[n].townType + 1;
+                        pg[townSpots[n].occupiedBy - 1][h.resource] += gain;
+                    }
+                });
+            }
+        });
+        document.getElementById("gains").innerHTML += "<br>[ " + dSum + " ]: ";
+        for (let i = 0; i < 4; i++) {
+            var gotSomething = false;
+            var message = "Player ";
+            if (i == 0) {
+                message += "'red'";
+            } else if (i == 1) {
+                message += "'blue'";
+            } else if (i == 2) {
+                message += "'white'";
+            } else {
+                message += "'yellow'";
+            }
+            message += " got: ";
+            for (let j = 0; j < 5; j++) {
+                if (pg[i][j] > 0) {
+                    if (gotSomething && i < 4) {
+                        message += ", ";
+                    }
+                    gotSomething = true;
+                    message += pg[i][j] + " ";
+                    if (j == 0) {
+                        message += "<span class='smallRect clay'></span>";
+                    } else if (j == 1) {
+                        message += "<span class='smallRect wood'></span>";
+                    } else if (j == 2) {
+                        message += "<span class='smallRect sheep'></span>";
+                    } else if (j == 3) {
+                        message += "<span class='smallRect wheat'></span>";
+                    } else {
+                        message += "<span class='smallRect rock'></span>";
+                    }
+                }
+            }
+            if (gotSomething) {
+                document.getElementById("gains").innerHTML += message +"; ";
+            }
+        }
+        document.getElementById("diceStats").innerHTML = "";
+        for (let i = 0; i < 12; i++) {
+            var c = 0;
+            throws.forEach(t => {
+                if (t == i) {
+                    c++;
+                }
+            });
+            if (c > 0) {
+                document.getElementById("diceStats").innerHTML += i + " : " + c + "(" + (100 * c / throws.length).toFixed(2) + "%)";
+            }
+        }
+    };
 
-    var predefinedCards = [
-        { id: 0, name: "Погреба", cost: 2, actions: 1, purchases: 0, coins: 0 },
-        { id: 1, name: "Деревня", cost: 3, actions: 2, purchases: 0, coins: 0 },
-        { id: 2, name: "Канцлер", cost: 3, actions: 0, purchases: 0, coins: 2 },
-        { id: 3, name: "Лесоруб", cost: 3, actions: 0, purchases: 1, coins: 2 },
-        { id: 4, name: "Ополчение", cost: 4, actions: 0, purchases: 0, coins: 2 },
-        { id: 5, name: "Ростовщик", cost: 4, actions: 0, purchases: 0, coins: 3 },
-        { id: 6, name: "Шпион", cost: 4, actions: 1, purchases: 1, coins: 0 },
-        { id: 7, name: "Фестиваль", cost: 5, actions: 2, purchases: 1, coins: 2 },
-        { id: 8, name: "Лаборатория", cost: 5, actions: 1, purchases: 0, coins: 0 },
-        { id: 9, name: "Зал совета", cost: 5, actions: 0, purchases: 1, coins: 0 },
-        { id: 10, name: "Рынок", cost: 5, actions: 1, purchases: 1, coins: 1 }
-    ];
+    function createGrid(cw) {
+        var s = '<svg width="' + (cw * 4) + 'px" viewBox="-20 -20 ' + (cw * 5 + 40) + ' ' + (cw * 5 + 40) + '" fill="white" stroke="black" stroke-width="1px">';
+        var i = 1;
+        var tsi = 1;
+        for (let row = 1; row <= 5; row++) {
+            var f = 1;
+            var xd = 0;
+            if (row < 3 || row > 3) {
+                f = 2;
+                xd = cw * 0.5;
+            }
+            if (row < 2 || row > 4) {
+                f = 3;
+                xd = cw;
+            }
+            for (let col = f; col <= 5; col++) {
+                let xm = (cw * (col - 0.5)) - xd;
+                let xr = (cw * col) - xd;
+                let xl = (cw * (col - 1)) - xd;
 
-    var playedCards = [];
+                let yd = (row * 0.25 * cw) - (0.25 * cw);
+                let y1 = (cw * (row - 1)) - yd;
+                let y2 = (cw * (row - 0.75)) - yd;
+                let y3 = (cw * (row - 0.25)) - yd;
+                let y4 = (cw * row) - yd;
+
+                s += '<polygon id="p' + i++ + '" points="' + xm + ',' + y1 + ' ' + xr + ',' + y2 + ' ' + xr + ',' + y3 + ' ' + xm + ',' + y4 + ' ' + xl + ',' + y3 + ' ' + xl + ',' + y2 + '" />';
+                s += '<g id="c' + (i - 1) + '"><circle cx="' + xm + '" cy="' + (y3 - cw * 0.25) + '" r="20" />';
+                s += '<text fill="#000" id="t' + (i - 1) + '" x="' + xm + '" y="' + (y3 - cw * 0.25) + '">2</text></g>';
+                hexes[i - 1] = {id: i - 1, number: 2, resource: 0, robber: false};
+
+                if (row > 3 && col == f) {
+                    townSpots[tsi++] = { i: (tsi - 1), x: xl - cw * 0.5, y: y1, nearby: [], occupiedBy: null, townType: 0};
+                }
+                townSpots[tsi++] = { i: (tsi - 1), x: xl, y: y2, occupiedBy: null, townType: 0};
+                townSpots[tsi++] = { i: (tsi - 1), x: xm, y: y1, occupiedBy: null, townType: 0};
+                if (col == 5) {
+                    townSpots[tsi++] = { i: (tsi - 1), x: xr, y: y2, occupiedBy: null, townType: 0};
+                }
+                if (row > 3 && col == 5) {
+                    townSpots[tsi++] = { i: (tsi - 1), x: xr + cw * 0.5, y: y1, occupiedBy: null, townType: 0};
+                }
+            }
+            if (row == 5) {
+                for (let col = 3; col <= 5; col++) {
+                    let xm = (cw * (col - 0.5)) - cw;
+                    let xr = (cw * col) - cw;
+                    let xl = (cw * (col - 1)) - cw;
+
+                    let yd = (row * 0.25 * cw) - (0.25 * cw);
+                    let y3 = (cw * (row - 0.25)) - yd;
+                    let y4 = (cw * row) - yd;
+
+                    townSpots[tsi++] = { i: (tsi - 1), x: xl, y: y3, occupiedBy: null, townType: 0};
+                    townSpots[tsi++] = { i: (tsi - 1), x: xm, y: y4, occupiedBy: null, townType: 0};
+                    if (col == 5) {
+                        townSpots[tsi++] = { i: (tsi - 1), x: xr, y: y3, occupiedBy: null, townType: 0};
+                    }
+                }
+            }
+        }
+        var i = 0;
+        townSpots.forEach(ts => {
+            s += '<g id="ts' + ts.i + '"><circle cx="' + ts.x + '" cy="' + ts.y + '" r="15" />';
+            s += '<text id="tst' + ts.i + '" x="' + ts.x + '" y="' + ts.y + '"> </text></g>';
+        });
+        s += '</svg>';
+        document.getElementById("gameField").innerHTML = s;
+    };
+
+    function initNearby() {
+        for (let i = 1; i <= 3; i++) {
+            hexes[i].nearby = [i * 2 - 1, i * 2 + 0, i * 2 + 1, i * 2 + 7, i * 2 + 8, i * 2 + 9];
+        }
+        for (let i = 4; i <= 7; i++) {
+            hexes[i].nearby = [i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 10, i * 2 + 11, i * 2 + 12];
+        }
+        for (let i = 8; i <= 12; i++) {
+            hexes[i].nearby = [i * 2 + 1, i * 2 + 2, i * 2 + 3, i * 2 + 12, i * 2 + 13, i * 2 + 14];
+        }
+        for (let i = 13; i <= 16; i++) {
+            hexes[i].nearby = [i * 2 + 3, i * 2 + 4, i * 2 + 5, i * 2 + 13, i * 2 + 14, i * 2 + 15];
+        }
+        for (let i = 17; i <= 19; i++) {
+            hexes[i].nearby = [i * 2 + 6, i * 2 + 7, i * 2 + 8, i * 2 + 14, i * 2 + 15, i * 2 + 16];
+        }
+    };
 
     window.onload = function() {
-        resetTurn();
-        predefinedCards.forEach(card => {
-            var htmlRow = '<div id="p-c-' + card.id +
-                '" class="predefined-card" onclick="predefinedCardClick(' + card.id + ')">';
-            htmlRow += '<div class="coin"><label>' + card.cost + '</label></div> ' + card.name + ' (';
-            if (card.actions > 0) {
-                htmlRow += ' ' + card.actions + ' ' + pluralActions(card.actions);
+        createGrid(200);
+        initNearby();
+        for (let i = 1; i <= 19; i++) {
+            document.getElementById("p" + i).onclick = function() {
+                if (lock == 0) {
+                    this.removeAttribute("class");
+                    hexes[i].resource++;
+                    if (hexes[i].resource > 5) {
+                        hexes[i].resource = 0;
+                    }
+                    if (hexes[i].resource == 0) {
+                        document.getElementById("p" + i).classList.add("clay");
+                    } else if (hexes[i].resource == 1) {
+                        document.getElementById("p" + i).classList.add("wood");
+                    } else if (hexes[i].resource == 2) {
+                        document.getElementById("p" + i).classList.add("sheep");
+                    } else if (hexes[i].resource == 3) {
+                        document.getElementById("p" + i).classList.add("wheat");
+                    } else if (hexes[i].resource == 4) {
+                        document.getElementById("p" + i).classList.add("rock");
+                    } else {
+                        document.getElementById("p" + i).classList.add("desert");
+                    }
+                }
+            };
+            document.getElementById("c" + i).onclick = function() {
+                if (lock == 0) {
+                    hexes[i].number++;
+                    if (hexes[i].number > 12) {
+                        hexes[i].number = 2;
+                    }
+                    if (hexes[i].number == 7) {
+                        hexes[i].number++;
+                    }
+                    let svgTextElement = document.getElementById("t" + i);
+                    var textNode = svgTextElement.childNodes[0];
+                    textNode.nodeValue = "" + hexes[i].number;
+                }
+            };
+        }
+        for (let i = 1; i <= 54; i++) {
+            document.getElementById("ts" + i).onclick = function() {
+                var occupiedBy = townSpots[i].occupiedBy;
+                var townType = townSpots[i].townType;
+                if (occupiedBy == null) {
+                    occupiedBy = 0;
+                }
+                var next = occupiedBy * 2 + townType + 1;
+                if (next > 9) {
+                    next = 0;
+                }
+                townSpots[i].occupiedBy = Math.floor(next / 2);
+                townSpots[i].townType = next % 2;
+
+                var cn = "ts";
+                if (townType == 1) {
+                    cn += "V";
+                } else {
+                    cn += "T";
+                }
+                cn += townSpots[i].occupiedBy;
+
+                this.removeAttribute("class");
+                document.getElementById("ts" + i).classList.add(cn);
+                let svgTextElement = document.getElementById("tst" + i);
+                var textNode = svgTextElement.childNodes[0];
+                if (townSpots[i].occupiedBy == 0) {
+                    textNode.nodeValue = " ";
+                } else {
+                    if (townType == 1) {
+                        textNode.nodeValue = "I";
+                    } else {
+                        textNode.nodeValue = "II";
+                    }
+                }
+            };
+        }
+        let lockRadios = document.querySelectorAll("input[id^='r_o']");
+        lockRadios.forEach(r => {
+            r.onclick = () => {
+                if (r.checked) {
+                    lock = (r.value == 'r_on');
+                }
             }
-            if (card.purchases > 0) {
-                htmlRow += ' ' + card.purchases + ' ' + pluralPurchases(card.purchases);
-            }
-            if (card.coins > 0) {
-                htmlRow += ' ' + card.coins + ' ' + pluralCoins(card.coins);
-            }
-            htmlRow += ' )</div>';
-            document.getElementById("cardList").innerHTML += htmlRow;
-        });
-    };
-
-    resetTurn = function() {
-        playedCards = [];
-        resetTotals();
-        updateTotalLabels();
-        updateCardLabels();
-        updateHistory();
-        document.getElementById("btnPlay").disabled = false;
-    };
-
-    resetTotals = function() {
-        totalActions = 1;
-        totalPurchases = 1;
-        totalCoins = 0;
-        currentActions = 0;
-        currentPurchases = 0;
-        currentCoins = 0;
-    };
-
-    predefinedCardClick = function(cardID) {
-        predefinedCards.forEach(card => {
-            if (card.id == cardID) {
-                currentActions = card.actions;
-                currentPurchases = card.purchases;
-                currentCoins = card.coins;
-                updateCardLabels();
-            }
-        });
-    };
-
-    onCardChange = function(resourceType, valueDelta) {
-        if (resourceType == "actions") {
-            currentActions += valueDelta;
-            if (currentActions < 0) {
-                currentActions = 0;
-            }
-        } else if (resourceType == "purchases") {
-            currentPurchases += valueDelta;
-            if (currentPurchases < 0) {
-                currentPurchases = 0;
-            }
-        } else {
-            currentCoins += valueDelta;
-            if (currentCoins < 0) {
-                currentCoins = 0;
-            }
-        }
-        updateCardLabels();
-    };
-
-    playCard = function() {
-        if (totalActions <= 0) {
-            alert("Не хватает действий");
-            return;
-        }
-        playedCards.push({ actions: currentActions, purchases: currentPurchases, coins: currentCoins });
-        totalActions += currentActions - 1;
-        totalPurchases += currentPurchases;
-        totalCoins += currentCoins;
-        currentActions = 0;
-        currentPurchases = 0;
-        currentCoins = 0;
-        updateTotalLabels();
-        updateCardLabels();
-        updateHistory();
-    };
-
-    updateHistory = function() {
-        var html = '';
-        var i = 1;
-        playedCards.forEach(card => {
-            html += i++ + ')';
-            if (card.actions > 0) {
-                html += ' ' + card.actions + ' ' + pluralActions(card.actions);
-            }
-            if (card.purchases > 0) {
-                html += ' ' + card.purchases + ' ' + pluralPurchases(card.purchases);
-            }
-            if (card.coins > 0) {
-                html += ' ' + card.coins + ' ' + pluralCoins(card.coins);
-            }
-            html += '<br>';
-        });
-        document.getElementById("history").innerHTML = html;
-        var historyRow = document.getElementById("historyRow");
-        if (playedCards.length == 0 && !historyRow.classList.contains("hidden")) {
-            historyRow.classList.add("hidden");
-        }
-        if (playedCards.length > 0 && historyRow.classList.contains("hidden")) {
-            historyRow.classList.remove("hidden");
-        }
-    };
-
-    updateTotalLabels = function() {
-        document.getElementById("totalActions").innerHTML = totalActions + " " + pluralActions(totalActions) +
-                ' <progress max="10" value="' + totalActions + '"></progress>';
-        document.getElementById("totalPurchases").innerHTML = totalPurchases + " " + pluralPurchases(totalPurchases);
-        if (totalCoins == 0) {
-            document.getElementById("totalCoins").innerHTML = '';
-        } else {
-            document.getElementById("totalCoins").innerHTML = "+ " + totalCoins + " " + pluralCoins(totalCoins);
-        }
-        if (totalActions == 0) {
-            document.getElementById("btnPlay").disabled = true;
-        }
-    };
-
-    updateCardLabels = function() {
-        if (currentActions == 0) {
-            document.getElementById("cardActions").innerHTML = '';
-        } else {
-            document.getElementById("cardActions").innerHTML = "+ " + currentActions + " " +
-                pluralActions(currentActions);
-        }
-        if (currentPurchases == 0) {
-            document.getElementById("cardPurchases").innerHTML = '';
-        } else {
-            document.getElementById("cardPurchases").innerHTML = "+ " + currentPurchases + " " +
-                pluralPurchases(currentPurchases);
-        }
-        if (currentCoins == 0) {
-            document.getElementById("cardCoins").innerHTML = '';
-        } else {
-            document.getElementById("cardCoins").innerHTML = "+ " + currentCoins + " " +
-                pluralCoins(currentCoins);
-        }
-    };
-
-    pluralActions = function(value) {
-        return plural(value, "действие", "действия", "действий");
-    };
-
-    pluralPurchases = function(value) {
-        return plural(value, "покупка", "покупки", "покупок");
-    };
-
-    pluralCoins = function(value) {
-        return plural(value, "монета", "монеты", "монет");
-    };
-
-    plural = function(value, one, two, many) {
-        var teen = value > 10 && value < 20;
-        var endsWithOne = value % 10 === 1;
-        if (!teen && endsWithOne) {
-            return one;
-        }
-        if (!teen && value % 10 >= 2 && value % 10 <= 4) {
-            return two;
-        }
-        return many;
+        })
     };
 </script>
 </body>
